@@ -1,29 +1,52 @@
-<html>
-    <head>
-        <h2> BibliOS </h2>
-    </head>
-    <body>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esqueceu a Senha - Bíblos</title>
+    <link rel="stylesheet" href="BibliOS.css">
+
+
+<body>
+
+    <h1 class="titulo">Esqueceu a Senha</h1>
+
+    <div class="caixa">
+
+        <h2 class="logo">Bíblos</h2>
+
         <form>
-            <label for="nome"> Digite seu nome de usuário</label>
-            <br>
-            <input type="text" name="nome_usuario" id="nome_usuario" required>
+            <input
+                type="email"
+                class="campo email"
+                placeholder="Insira seu E-mail"
+                required
+            >
 
+            <input
+                type="text"
+                class="campo menor"
+                placeholder="Inserir código enviado no e-mail"
+            >
 
-            <br><br>
+            <input
+                type="password"
+                class="campo menor"
+                placeholder="Criar nova senha"
+            >
 
+            <input
+                type="password"
+                class="campo menor"
+                placeholder="Confirmar nova senha"
+            >
 
-            <label for="senha"> Digite a sua senha </label>
-            <br>
-            <input type="password" name="senha_usuario" id="senha_usuario" required>
-
-
-            <br>
-
-
-            <button type="submit"> Esqueci a senha </button>
-            <br><br>
-            
-            <button typ="submit"> LOGIN </button>
+            <button type="submit" class="botao">
+                CONFIRMAR
+            </button>
         </form>
-    </body>
+
+    </div>
+
+</body>
 </html>

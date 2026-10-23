@@ -1,0 +1,156 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - BibliOS</title>
+</head>
+
+<body>
+
+    <!-- MENU LATERAL -->
+    <aside>
+        <h2>BibliOS</h2>
+
+        <nav>
+            <ul>
+                <li>
+                    <a href="dashboard.html">Dashboard</a>
+                </li>
+
+                <li>
+                    <a href="../Leitores/listar.php">Leitores</a>
+                </li>
+
+                <li>
+                    <a href="../Acervo/listar.php">Acervo</a>
+                </li>
+
+                <li>
+                    <a href="../Emprestimos/listar.php">
+                        Empréstimos
+                    </a>
+                </li>
+
+                <li>
+                    <a href="../config/sair.php">Sair</a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main>
+
+        <!-- CABEÇALHO -->
+        <header>
+            <h1>Painel Geral</h1>
+
+            <p>
+                Acompanhamento de leitores e
+                devoluções em tempo real.
+            </p>
+
+            <nav aria-label="Filtros de empréstimos">
+                <a href="dashboard.html">Todos</a>
+                <a href="dashboard.html?filtro=atrasados">
+                    Em atraso
+                </a>
+            </nav>
+
+            <a href="../Emprestimos/novo.php">
+                + Novo Empréstimo
+            </a>
+        </header>
+
+        <!-- ESTATÍSTICAS -->
+        <section>
+            <h2>Estatísticas da Biblioteca</h2>
+
+            <article>
+                <h3>Total de Empréstimos</h3>
+                <p>142</p>
+                <small>24 novos neste mês</small>
+            </article>
+
+            <article>
+                <h3>Em Atraso</h3>
+                <p>1</p>
+                <small>Requer atenção imediata</small>
+            </article>
+
+            <article>
+                <h3>Leitores Ativos</h3>
+                <p>389</p>
+                <small>Leitores cadastrados e ativos</small>
+            </article>
+
+            <article>
+                <h3>Novos Livros</h3>
+                <p>12</p>
+                <small>Adicionados esta semana</small>
+            </article>
+        </section>
+
+        <!-- EMPRÉSTIMOS ATIVOS -->
+        <section>
+            <h2>Empréstimos Ativos</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Leitor</th>
+                        <th scope="col">Livro</th>
+                        <th scope="col">Data de Saída</th>
+                        <th scope="col">Devolução Prevista</th>
+                        <th scope="col">Ações</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td>Ana Clara Ribeiro</td>
+                        <td>O Pequeno Príncipe</td>
+                        <td>15/07/2026</td>
+                        <td>29/07/2026</td>
+                        <td>
+                            <a href="#">Visualizar</a>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Pedro Henrique Santos</td>
+                        <td>Reinações de Narizinho</td>
+                        <td>10/07/2026</td>
+                        <td>24/07/2026 - ATRASADO</td>
+                        <td>
+                            <a href="#">Visualizar</a>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Mariana Costa Silva</td>
+                        <td>A Bolsa Amarela</td>
+                        <td>20/08/2026</td>
+                        <td>03/09/2026</td>
+                        <td>
+                            <a href="#">Visualizar</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- RODAPÉ -->
+        <footer>
+            <p>BibliOS v3.2.0</p>
+            <p>Acesso Administrativo Restrito</p>
+        </footer>
+
+    </main>
+
+</body>
+</html>
