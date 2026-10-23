@@ -1,0 +1,52 @@
+CREATE DATABASE IF NOT EXISTS db_biblios_b;
+USE db_biblios_b;
+
+-- 1. Tabela de Categorias (Criada primeiro pois tb_livros depende dela)
+CREATE TABLE tb_categorias (
+    id_categoria INT AUTO_INCREMENT PRIMARY KEY,
+    nome_categoria VARCHAR(70) NOT NULL
+);
+
+-- 2. Tabela de Leitores
+CREATE TABLE tb_leitores (
+    id_leitor INT AUTO_INCREMENT PRIMARY KEY,
+    nome_leitor VARCHAR(100) NOT NULL,
+    email_leitor VARCHAR(100),
+    telefone_leitor VARCHAR(20),
+    data_nascimento DATE,
+    foto_leitor VARCHAR(500),
+    tipo_leitor VARCHAR(10),
+    status_leitor BOOLEAN
+);
+
+-- 3. Tabela de Livros
+CREATE TABLE tb_livros (
+    id_livro INT AUTO_INCREMENT PRIMARY KEY,
+    fk_categoria INT NOT NULL,
+    titulo_livro VARCHAR(100) NOT NULL,
+    autor_livro VARCHAR(100) NOT NULL,
+    foto_livro VARCHAR(500),
+    status_conservacao VARCHAR(20),
+    status_circulacao BOOLEAN,
+    FOREIGN KEY (fk_categoria) REFERENCES tb_categorias(id_categoria)
+);
+
+-- 4. Tabela de Empréstimos
+CREATE TABLE tb_emprestimos (
+    id_emprestimo INT AUTO_INCREMENT PRIMARY KEY,
+    fk_leitor INT NOT NULL,
+    data_emprestimo DATE NOT NULL,
+    data_prevista_devolucao DATE NOT NULL,
+    FOREIGN KEY (fk_leitor) REFERENCES tb_leitores(id_leitor)
+);
+
+-- 5. Tabela de Itens do Empréstimo
+CREATE TABLE tb_itens_emprestimo (
+    id_item_emprestimo INT AUTO_INCREMENT PRIMARY KEY,
+    fk_emprestimo INT NOT NULL,
+    fk_livro INT NOT NULL,
+    observacao_livro VARCHAR(255),
+    data_devolucao DATE NULL,
+    FOREIGN KEY (fk_emprestimo) REFERENCES tb_emprestimos(id_emprestimo),
+    FOREIGN KEY (fk_livro) REFERENCES tb_livros(id_livro)
+);
