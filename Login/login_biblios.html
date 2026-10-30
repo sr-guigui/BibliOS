@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - BibliOS</title>
+    <style>
+        /* =========================================
+           Reset e Variáveis Base
+           ========================================= */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background-color: #fff8eb; /* Fundo bege claro requisitado */
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* =========================================
+           Cabeçalho Verde Oliva
+           ========================================= */
+        .top-banner {
+            width: 100%;
+            height: 60px;
+            background-color: #6b8e73; /* Tom de verde oliva baseado na imagem */
+            position: relative;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            padding-left: 20px;
+        }
+        
+        .top-banner span {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+        }
+
+        /* =========================================
+           Layout Principal Dividido
+           ========================================= */
+        .main-container {
+            display: flex;
+            flex: 1;
+            width: 100%;
+            position: relative;
+        }
+
+        /* Lado Esquerdo - Padrão com corte diagonal */
+        .left-side {
+            flex: 0 0 55%;
+            /* Fallback colorido simulando um padrão, e URL real da imagem */
+            background-color: #e0e0e0;
+            background-image: url('fundo_login.jpeg'), linear-gradient(135deg, #e74c3c 10%, #f1c40f 30%, #2ecc71 60%, #2980b9 100%);
+            background-size: cover;
+            background-position: center;
+            /* Polígono que faz o corte diagonal na direita (Cima 100%, Baixo 80%) */
+            clip-path: polygon(0 0, 100% 0, 80% 100%, 0% 100%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding-left: 5%;
+        }
+
+        /* Sobreposição de texto na esquerda */
+        .brand-overlay {
+            background-color: rgba(8, 76, 37, 0.65); /* Fundo verde escuro semi-transparente */
+            padding: 20px 40px;
+            margin-top: -50px;
+        }
+
+        .brand-overlay h1 {
+            color: #ffffff;
+            font-size: clamp(60px, 8vw, 120px);
+            font-weight: 900;
+            text-transform: uppercase;
+            line-height: 0.9;
+            letter-spacing: 2px;
+            /* Sombra projetada para efeito 3D */
+            text-shadow: 4px 4px 8px rgba(0,0,0,0.4);
+        }
+
+        /* Lado Direito - Painel de Login */
+        .right-side {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Margem negativa para ficar sob o corte diagonal se necessário, mas o flex já divide bem */
+            margin-left: -5%; 
+        }
+
+        /* =========================================
+           Painel de Login Verde Escuro
+           ========================================= */
+        .painel {
+            width: min(90%, 350px);
+            background-color: #084c25;
+            border-radius: 14px;
+            padding: 40px 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 5;
+        }
+
+        .painel-logo {
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 900;
+            text-transform: uppercase;
+            text-align: center;
+            line-height: 1;
+            margin-bottom: 35px;
+        }
+
+        form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .campo {
+            width: 100%;
+            height: 45px;
+            background-color: #ffffff;
+            border: none;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            color: #222;
+            outline: none;
+        }
+
+        .campo::placeholder {
+            color: #111;
+            font-weight: 800;
+        }
+
+        .campo:focus {
+            outline: 3px solid #ff4b0b;
+        }
+
+        /* Botão Esqueceu Senha */
+        .btn-esqueceu {
+            background-color: #ffffff;
+            color: #ff4b0b;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 6px 20px;
+            border-radius: 20px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-esqueceu:hover {
+            opacity: 0.8;
+        }
+
+        /* Botão de Login Laranja */
+        .btn-login {
+            background-color: #ff4b0b;
+            color: #ffffff;
+            border: none;
+            width: 140px;
+            height: 45px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        .btn-login:hover {
+            background-color: #e83d00;
+        }
+
+        .btn-login:active {
+            transform: scale(0.97);
+        }
+
+        /* =========================================
+           Responsividade
+           ========================================= */
+        @media (max-width: 850px) {
+            .main-container {
+                flex-direction: column;
+            }
+            .left-side {
+                flex: none;
+                height: 250px;
+                clip-path: polygon(0 0, 100% 0, 100% 85%, 0% 100%);
+                padding-left: 20px;
+                background-position: top;
+            }
+            .brand-overlay {
+                margin-top: -30px;
+                padding: 10px 20px;
+            }
+            .brand-overlay h1 {
+                font-size: 40px;
+            }
+            .right-side {
+                margin-left: 0;
+                padding: 30px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Faixa superior verde oliva -->
+    <header class="top-banner">
+        <span>Tela de login</span>
+    </header>
+
+    <main class="main-container">
+        
+        <!-- Área Esquerda: Fundo e Logo grande -->
+        <section class="left-side">
+            <div class="brand-overlay">
+                <h1>Bibli<br>OS</h1>
+            </div>
+        </section>
+
+        <!-- Área Direita: Painel de Autenticação -->
+        <section class="right-side">
+            <div class="painel">
+                
+                <div class="painel-logo">
+                    Bibli<br>ios
+                </div>
+
+                <!-- Formulário com redirecionamento nativo -->
+                <form action="../Dashboard_inicial/dashboard.html" method="get">
+                    
+                    <input 
+                        type="text" 
+                        name="nome" 
+                        class="campo" 
+                        placeholder="NOME" 
+                        aria-label="Insira seu nome" 
+                        required
+                    >
+
+                    <input 
+                        type="password" 
+                        name="senha" 
+                        class="campo" 
+                        placeholder="SENHA" 
+                        aria-label="Insira sua senha" 
+                        required
+                    >
+
+                    <a href="../esqueceu_senha/esqueceu_senha.html" class="btn-esqueceu">
+                        ESQUECEU SENHA
+                    </a>
+
+                    <button type="submit" class="btn-login">
+                        LOGIN
+                    </button>
+
+                </form>
+            </div>
+        </section>
+
+    </main>
+
+</body>
+</html>

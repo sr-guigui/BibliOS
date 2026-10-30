@@ -1,0 +1,63 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esqueceu a Senha - BiblioS</title>
+    <link rel="stylesheet" href="tela2.css">
+</head>
+<body>
+
+    <main class="container">
+        <h1>Esqueceu a Senha</h1>
+
+        <section class="painel">
+            <h2>BiblioS</h2>
+
+            <form action="../Login/login_biblios.html" method="post">
+                <input
+                    type="email"
+                    name="email"
+                    class="campo-email"
+                    placeholder="Insira seu E-mail"
+                    aria-label="Insira seu e-mail"
+                    required
+                >
+
+                <input
+                    type="text"
+                    name="codigo"
+                    class="campo"
+                    placeholder="Inserir código enviado no e-mail"
+                    aria-label="Código enviado por e-mail"
+                    required
+                >
+
+                <input
+                    type="password"
+                    name="nova-senha"
+                    class="campo"
+                    placeholder="Criar nova senha"
+                    aria-label="Criar nova senha"
+                    minlength="8"
+                    required
+                >
+
+                <input
+                    type="password"
+                    name="confirmar-senha"
+                    class="campo"
+                    placeholder="Confirmar nova senha"
+                    aria-label="Confirmar nova senha"
+                    minlength="8"
+                    required
+                >
+            
+                <button type="submit" class="btn-login">CONFIRMAR</button>
+            </form>
+        </section>
+    </main>
+
+</body>
+</html>

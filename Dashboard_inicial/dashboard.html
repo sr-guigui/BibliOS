@@ -6,40 +6,48 @@
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../barra_lateral.css">
+    <link rel="stylesheet" href="dashboard.css">
     <title>Dashboard - BibliOS</title>
 </head>
 
 <body>
-
+   
     <!-- MENU LATERAL -->
-    <aside>
-        <h2>BibliOS</h2>
-
+    <aside class="sidebar">
+        <div class="logo">
+            <i class="fa-solid fa-book-open"></i>
+            <h2>BibliOS</h2>
+        </div>
+    
         <nav>
-            <ul>
-                <li>
-                    <a href="dashboard.html">Dashboard</a>
+            <ul class="nav-links">
+                <!-- A classe "active" vem para o Dashboard nesta tela -->
+                <li class="active">
+                    <a href="dashboard.html"><i class="fa-solid fa-border-all"></i> Dashboard</a>
                 </li>
-
                 <li>
-                    <a href="../Leitores/listar.php">Leitores</a>
+                    <a href="acervo.html"><i class="fa-solid fa-books"></i><i class="fa-solid fa-book"></i> Acervo</a>
                 </li>
-
                 <li>
-                    <a href="../Acervo/listar.php">Acervo</a>
+                    <a href="leitores.html"><i class="fa-solid fa-user-group"></i> Leitores</a>
                 </li>
-
                 <li>
-                    <a href="../Emprestimos/listar.php">
-                        Empréstimos
-                    </a>
+                    <a href="emprestimos.html"><i class="fa-solid fa-address-book"></i> Empréstimos</a>
                 </li>
-
                 <li>
-                    <a href="../config/sair.php">Sair</a>
+                    <a href="relatorios.html"><i class="fa-solid fa-chart-simple"></i> Relatórios</a>
+                </li>
+                <li>
+                    <a href="configuracoes.html"><i class="fa-solid fa-gear"></i> Configurações</a>
                 </li>
             </ul>
         </nav>
+    
+        <div class="sidebar-footer">
+            <hr>
+            <a href="sair.html" class="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</a>
+        </div>
     </aside>
 
     <!-- CONTEÚDO PRINCIPAL -->
@@ -146,8 +154,7 @@
 
         <!-- RODAPÉ -->
         <footer>
-            <p>BibliOS v3.2.0</p>
-            <p>Acesso Administrativo Restrito</p>
+            <p>&copy; 2026 BibliOS. Todos os direitos reservados.</p>
         </footer>
 
     </main>

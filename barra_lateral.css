@@ -1,0 +1,103 @@
+/* ==================================
+   MENU LATERAL GLOBAL (SIDEBAR)
+================================== */
+.sidebar {
+    width: 250px;
+    background-color: #0A4B25;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    padding-top: 30px;
+    min-height: 100vh;
+    /* Garante que a barra sempre ocupe a altura total da tela */
+}
+
+/* Logo da BibliOS */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 30px;
+    margin-bottom: 50px;
+}
+
+.logo i {
+    color: #FF5B0F;
+    font-size: 24px;
+}
+
+.logo h2 {
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    margin: 0;
+}
+
+/* Links de Navegação */
+.nav-links {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-links li a {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 16px 30px;
+    color: #fff;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.nav-links li a i {
+    width: 20px;
+    text-align: center;
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+.nav-links li a:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Item Ativo (Aba selecionada) */
+.nav-links li.active a {
+    background-color: #222634;
+    border-left: 4px solid #FF5B0F;
+    padding-left: 26px;
+    /* Compensa a largura da borda */
+}
+
+/* Rodapé e Botão Sair */
+.sidebar-footer {
+    margin-top: auto;
+    /* Empurra o rodapé para o final da barra */
+    padding: 30px;
+}
+
+.sidebar-footer hr {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 20px;
+}
+
+.logout {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: #fff;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: opacity 0.2s;
+}
+
+.logout:hover {
+    opacity: 0.8;
+}

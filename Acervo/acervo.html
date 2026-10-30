@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acervo de Livros - BibliOS</title>
+    <link rel="stylesheet" href="acervo.css">
+    <!-- Usando Font Awesome para os ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- MENU LATERAL -->
+    <aside class="sidebar">
+        <div class="logo">
+            <i class="fa-solid fa-book-open"></i>
+            <h2>BibliOS</h2>
+        </div>
+
+        <nav>
+            <ul class="nav-links">
+                <li>
+                    <a href="dashboard.html"><i class="fa-solid fa-border-all"></i> Dashboard</a>
+                </li>
+                <li class="active">
+                    <a href="acervo.html"><i class="fa-solid fa-books"></i><i class="fa-solid fa-book"></i> Acervo</a>
+                </li>
+                <li>
+                    <a href="leitores.html"><i class="fa-solid fa-user-group"></i> Leitores</a>
+                </li>
+                <li>
+                    <a href="emprestimos.html"><i class="fa-solid fa-address-book"></i> Empréstimos</a>
+                </li>
+                <li>
+                    <a href="relatorios.html"><i class="fa-solid fa-chart-simple"></i> Relatórios</a>
+                </li>
+                <li>
+                    <a href="configuracoes.html"><i class="fa-solid fa-gear"></i> Configurações</a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <hr>
+            <a href="sair.html" class="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</a>
+        </div>
+    </aside>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="main-content">
+
+        <!-- CABEÇALHO DA PÁGINA -->
+        <header class="page-header">
+            <div class="breadcrumb">
+                Acervo &gt; <span>Lista de Livros</span>
+            </div>
+            <h1>Acervo de Livros</h1>
+        </header>
+
+        <!-- BARRA DE FERRAMENTAS -->
+        <section class="toolbar">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Buscar por título ou autor...">
+            </div>
+
+            <button class="btn-novo">
+                <i class="fa-solid fa-plus"></i> NOVO LIVRO
+            </button>
+        </section>
+
+        <!-- TABELA DE ACERVO -->
+        <section class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="col-capa">Capa</th>
+                        <th>Título <i class="fa-solid fa-chevron-down"></i></th>
+                        <th>Autor <i class="fa-solid fa-chevron-down"></i></th>
+                        <th>Gênero</th>
+                        <th>Conservação</th>
+                        <th>Circulação <i class="fa-solid fa-circle-info"></i></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="book-icon bg-blue">DC</div>
+                        </td>
+                        <td class="fw-bold">Dom Casmurro</td>
+                        <td class="text-gray">Machado de Assis</td>
+                        <td class="text-gray">Romance</td>
+                        <td><span class="badge badge-ativo">Ativo</span></td>
+                        <td><span class="badge badge-disponivel">Disponível</span></td>
+                    </tr>
+                    <tr class="row-striped">
+                        <td>
+                            <div class="book-icon bg-red">OC</div>
+                        </td>
+                        <td class="fw-bold">O Cortiço</td>
+                        <td class="text-gray">Aluísio Azevedo</td>
+                        <td class="text-gray">Naturalismo</td>
+                        <td><span class="badge badge-ativo">Ativo</span></td>
+                        <td><span class="badge badge-emprestado">Emprestado</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="book-icon bg-yellow">IR</div>
+                        </td>
+                        <td class="fw-bold">Iracema</td>
+                        <td class="text-gray">José de Alencar</td>
+                        <td class="text-gray">Romance</td>
+                        <td><span class="badge badge-inativo">Inativo</span></td>
+                        <td><span class="badge badge-disponivel">Disponível</span></td>
+                    </tr>
+                    <tr class="row-striped">
+                        <td>
+                            <div class="book-icon bg-blue">BC</div>
+                        </td>
+                        <td class="fw-bold">Memórias Póstumas de Brás Cubas</td>
+                        <td class="text-gray">Machado de Assis</td>
+                        <td class="text-gray">Romance</td>
+                        <td><span class="badge badge-ativo">Ativo</span></td>
+                        <td><span class="badge badge-emprestado">Emprestado</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="book-icon bg-purple">CA</div>
+                        </td>
+                        <td class="fw-bold">Capitães da Areia</td>
+                        <td class="text-gray">Jorge Amado</td>
+                        <td class="text-gray">Romance</td>
+                        <td><span class="badge badge-ativo">Ativo</span></td>
+                        <td><span class="badge badge-disponivel">Disponível</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+    </main>
+
+</body>
+
+</html>
