@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>BiblioOs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+</head>
+<body>
+<div class="friso" aria-hidden="true"></div>
+<div class="miolo">
+  <header class="topo" id="topo"></header>
+  <main id="app"></main>
+</div>
+<button class="aba-ajuda" type="button" data-acao="ajuda">Precisa de ajuda?</button>
+
+<dialog id="dlg-ajuda" aria-labelledby="ajuda-titulo">
+  <h2 id="ajuda-titulo">Como usar o BiblioOs</h2>
+  <ul>
+    <li>Para ver quais livros estão na estante, escolha <strong>Situação dos livros</strong>.</li>
+    <li>Para emprestar, escolha <strong>Emprestar um livro</strong> e siga os três passos.</li>
+    <li>Para devolver, escolha <strong>Devolver um livro</strong> e depois o botão do livro.</li>
+    <li>Se errar uma devolução, use <strong>Desfazer</strong>. Nada se perde.</li>
+  </ul>
+  <div class="acoes"><button class="botao botao--telha" type="button" data-acao="fechar-ajuda">Entendi</button></div>
+</dialog>
+<dialog id="dlg-confirma" aria-labelledby="confirma-titulo"></dialog>
+
+<script>
+(function () {
+  'use strict';
+
+  var DIA = 864e5;
+  function zero(d) { var x = new Date(d); x.setHours(0, 0, 0, 0); return x; }
+  var hoje = zero(new Date());
+  function somar(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
+  function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function doISO(s) { var p = s.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+  function dataLonga(d) { return d.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }); }
+  function dataCurta(d) { return d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' }); }
+  function diasEntre(a, b) { return Math.round((a - b) / DIA); }
+  function plural(n, um, varios) { return n + ' ' + (n === 1 ? um : varios); }
+
+  var CHAVE_USR = 'biblioos.usuario.v1';
+  var livros = [];
+  var LEITORES = [];
+  
+  function gravar(c, d) { localStorage.setItem(c, JSON.stringify(d)); }
+  function ler(c) { try { return JSON.parse(localStorage.getItem(c)); } catch (e) { return null; } }
+  var usuario = ler(CHAVE_USR);
+
+  function estado(l) { return !l.emprestimo ? 'estante' : (doISO(l.emprestimo.ate) < hoje ? 'atrasado' : 'emprestado'); }
+  function contar() {
+    var c = { todos: livros.length, estante: 0, emprestado: 0, atrasado: 0 };
+    livros.forEach(function (l) { c[estado(l)]++; });
+    return c;
+  }
+  function norm(s) { return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  var ROTULO = { estante: 'Na estante', emprestado: 'Emprestado', atrasado: 'Atrasado' };
+  function selo(l, texto) { var e = estado(l); return '<span class="selo selo--' + e + '">' + (texto || ROTULO[e]) + '</span>'; }
+
+  var LOGO = '<svg viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="26" fill="#46301A"/><path d="M11 21c8-2 13 0 15 3v18c-2-3-7-5-15-3z" fill="#EEEBE5"/><path d="M41 21c-8-2-13 0-15 3v18c2-3 7-5 15-3z" fill="#EEEBE5"/><circle cx="26" cy="13" r="4.2" fill="#E3865A"/></svg>';
+  function mascote(cls) {
+    return '<svg class="' + (cls || '') + '" viewBox="0 0 100 124" aria-hidden="true">' +
+      '<path d="M44 90v22M64 90v22" stroke="#46301A" stroke-width="5" stroke-linecap="round"/>' +
+      '<path d="M20 58C8 56 4 46 8 36" fill="none" stroke="#46301A" stroke-width="5" stroke-linecap="round"/>' +
+      '<rect x="18" y="14" width="66" height="76" rx="16" fill="#fff" stroke="#46301A" stroke-width="5"/>' +
+      '<path d="M66 14v24l8-6 8 6V14z" fill="#B85C1A"/>' +
+      '<circle cx="42" cy="54" r="4.6" fill="#46301A"/><circle cx="62" cy="54" r="4.6" fill="#46301A"/>' +
+      '<path d="M44 68q8 8 16 0" fill="none" stroke="#46301A" stroke-width="4.4" stroke-linecap="round"/></svg>';
+  }
+  function arco(textoBalao) {
+    return '<section class="rodape-arco" aria-label="Dica">' +
+      '<div class="balao">' + textoBalao + '</div>' +
+      '<div class="arco"><svg class="curva" viewBox="0 0 1000 140" preserveAspectRatio="none" aria-hidden="true">' +
+      '<path d="M0 30Q500 150 1000 30" fill="none" stroke="#B85C1A" stroke-width="16" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>' +
+      mascote('mascote') + '</div></section>';
+  }
+  var SETA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>';
+  var ICONES = {
+    estante: '<svg viewBox="0 0 54 54" aria-hidden="true"><rect x="8" y="12" width="9" height="28" rx="2"/><rect x="20" y="8" width="9" height="32" rx="2"/><path d="M33 14l8-2 6 26-8 2z"/><path d="M5 46h44"/></svg>',
+    emprestar: '<svg viewBox="0 0 54 54" aria-hidden="true"><path d="M12 6h26a3 3 0 0 1 3 3v20H15a3 3 0 0 1-3-3z"/><path d="M10 41h26M29 34l7 7-7 7"/></svg>',
+    devolver: '<svg viewBox="0 0 54 54" aria-hidden="true"><path d="M12 6h26a3 3 0 0 1 3 3v20H15a3 3 0 0 1-3-3z"/><path d="M44 41H18M25 34l-7 7 7 7"/></svg>'
+  };
+  function voltar() { return '<a class="botao botao--claro" href="#inicio">' + SETA + 'Voltar ao início</a>'; }
+
+  var app = document.getElementById('app'), topo = document.getElementById('topo');
+
+  function cabecalho() {
+    if (!usuario) {
+      topo.innerHTML = '<span class="marca-logo">' + LOGO + '<span>BiblioOs</span></span>';
+      return;
+    }
+    topo.innerHTML = '<a class="marca-logo" href="#inicio" aria-label="BiblioOs, ir para o início">' + LOGO + '<span>BiblioOs</span></a>' +
+      '<div class="usuario"><span>Olá, <strong>' + esc(usuario.primeiro) + '</strong></span>' +
+      '<button class="botao botao--claro" type="button" data-acao="sair">Sair</button></div>';
+  }
+
+  function telaEntrar() {
+    app.innerHTML =
+      '<div class="entrar"><div class="entrar-texto"><h1 id="titulo" tabindex="-1">Bem-vinda ao BiblioOs</h1>' +
+      '<p>Entre com seu nome e sua senha para cuidar dos livros.</p></div>' +
+      '<form class="painel" id="form-entrar" novalidate>' +
+      '<div id="erro-entrar" role="alert"></div>' +
+      '<div class="campo"><label for="nome">Seu nome</label><input id="nome" name="nome" type="text" autocomplete="username"></div>' +
+      '<div class="campo"><label for="senha">Sua senha</label><div class="campo-senha">' +
+      '<input id="senha" name="senha" type="password" autocomplete="current-password">' +
+      '<button type="button" data-acao="ver-senha" aria-controls="senha">Mostrar</button></div></div>' +
+      '<button class="botao botao--telha botao--grande" type="submit" style="width:100%">Entrar</button>' +
+      '<p class="nota">Para testar, use qualquer nome e a senha 1234.</p></form></div>' +
+      arco('Vamos começar? Escreva seu nome e a senha.');
+  }
+
+  function saudacaoHora() { var h = new Date().getHours(); return h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite'; }
+
+  function telaInicio() {
+    var c = contar(), fora = c.emprestado + c.atrasado;
+    var linhaFora = fora === 0 ? 'Nenhum livro está fora da estante.' :
+      plural(fora, 'livro está fora', 'livros estão fora') + '.' + (c.atrasado ? ' ' + plural(c.atrasado, 'está atrasado', 'estão atrasados') + '.' : '');
+    function cartao(href, cor, icone, titulo, texto) {
+      return '<a class="cartao-menu" href="#' + href + '"><span class="icone" style="background:' + cor + '">' + ICONES[icone] + '</span>' +
+        '<h2>' + titulo + '</h2><p>' + texto + '</p>' +
+        '<span class="anel" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></a>';
+    }
+    app.innerHTML =
+      '<section class="saudacao"><h1 id="titulo" tabindex="-1">' + saudacaoHora() + ', ' + esc(usuario.primeiro) + '.</h1>' +
+      '<p>O que você quer fazer hoje?</p><p class="data">' + dataLonga(new Date()) + '</p></section>' +
+      '<nav class="menu" aria-label="Menu principal">' +
+      cartao('livros', '#46301A', 'estante', 'Situação dos livros', c.estante + ' de ' + c.todos + ' livros estão na estante.') +
+      cartao('emprestar', '#B85C1A', 'emprestar', 'Emprestar um livro', plural(c.estante, 'livro está livre', 'livros estão livres') + ' para sair.') +
+      cartao('devolver', '#4A7228', 'devolver', 'Devolver um livro', linhaFora) +
+      '</nav>' + arco('Qualquer dúvida, aperte <strong>Precisa de ajuda?</strong> na aba laranja.');
+  }
+
+  var filtro = 'todos', termo = '';
+  function telaLivros() {
+    var c = contar();
+    function f(chave, rotulo) {
+      return '<button class="filtro" type="button" data-acao="filtro" data-valor="' + chave + '" aria-pressed="' + (filtro === chave) + '"><strong>' + c[chave] + '</strong><span>' + rotulo + '</span></button>';
+    }
+    app.innerHTML =
+      '<p>' + voltar() + '</p><h1 class="titulo-pagina" id="titulo" tabindex="-1"><span>Situação dos livros</span></h1>' +
+      '<div class="filtros" role="group" aria-label="Mostrar livros">' +
+      f('todos', 'Todos os livros') + f('estante', 'Na estante') + f('emprestado', 'Emprestados') + f('atrasado', 'Atrasados') + '</div>' +
+      '<div class="busca"><label for="busca">Procurar por título ou autor</label><input id="busca" type="search" autocomplete="off" value="' + esc(termo) + '"></div>' +
+      '<section class="painel lista" id="lista" aria-live="polite"></section>';
+    listar();
+  }
+  function listar() {
+    var t = norm(termo.trim());
+    var itens = livros.filter(function (l) {
+      return (filtro === 'todos' || estado(l) === filtro) && (!t || norm(l.titulo + ' ' + l.autor).indexOf(t) > -1);
+    }).sort(function (a, b) { return a.titulo.localeCompare(b.titulo, 'pt-BR'); });
+    var el = document.getElementById('lista');
+    if (!itens.length) {
+      el.innerHTML = '<div class="vazio">' + mascote() + '<p>Nenhum livro encontrado. Confira as letras ou mostre todos.</p>' +
+        '<button class="botao botao--telha" type="button" data-acao="limpar">Mostrar todos os livros</button></div>';
+      return;
+    }
+    el.innerHTML = itens.map(function (l) {
+      var e = estado(l), info = '';
+      if (e === 'emprestado') info = 'Com ' + esc(l.emprestimo.leitor) + ' até ' + dataCurta(doISO(l.emprestimo.ate));
+      if (e === 'atrasado') info = 'Com ' + esc(l.emprestimo.leitor) + '. Era para voltar em ' + dataCurta(doISO(l.emprestimo.ate));
+      return '<article class="livro"><div><h3>' + esc(l.titulo) + '</h3><p class="autor">' + esc(l.autor) + '</p></div>' +
+        '<div class="situacao">' + selo(l) + (info ? '<span>' + info + '</span>' : '') + '</div></article>';
+    }).join('');
+  }
+
+  var sel = { leitor: null, livro: null, semanas: 2 };
+  function telaEmprestar() {
+    sel = { leitor: null, livro: null, semanas: 2 };
+    var livres = livros.filter(function (l) { return !l.emprestimo; }).sort(function (a, b) { return a.titulo.localeCompare(b.titulo, 'pt-BR'); });
+    var leitores = LEITORES.map(function (n) {
+      return '<label class="escolha"><input type="radio" name="leitor" value="' + esc(n) + '"><span class="bolinha"></span><span>' + esc(n) + '</span></label>';
+    }).join('');
+    
+    // Adicionamos opção extra caso queiram criar leitor novo
+    leitores += '<label class="escolha"><input type="radio" name="leitor" value="novo" id="radio-novo-leitor"><span class="bolinha"></span><span><strong>Novo Leitor</strong></span></label>' +
+                '<input type="text" id="input-novo-leitor" placeholder="Nome do novo leitor" style="display:none; width:100%; border: 3px solid var(--cafe); border-radius: 999px; padding: 0.4rem 1.6rem; font-size: 1.1rem; margin-top: 0.5rem;" autocomplete="off">';
+
+    var lista = livres.length ? livres.map(function (l) {
+      return '<label class="escolha" data-texto="' + esc(norm(l.titulo + ' ' + l.autor)) + '"><input type="radio" name="livro" value="' + l.id + '"><span class="bolinha"></span><span>' + esc(l.titulo) + '<small>' + esc(l.autor) + '</small></span></label>';
+    }).join('') : '';
+    var prazos = [1, 2, 3].map(function (s) {
+      return '<label class="escolha"><input type="radio" name="prazo" value="' + s + '"' + (s === 2 ? ' checked' : '') + '><span class="bolinha"></span><span>' + plural(s, 'semana', 'semanas') + '<small>até ' + dataCurta(somar(hoje, s * 7)) + '</small></span></label>';
+    }).join('');
+    app.innerHTML =
+      '<p>' + voltar() + '</p><h1 class="titulo-pagina" id="titulo" tabindex="-1"><span>Emprestar um livro</span></h1><div class="passos">' +
+      '<section class="painel passo" aria-labelledby="p1"><div class="passo-topo"><span class="passo-numero" aria-hidden="true">1</span><h2 id="p1">Quem vai levar o livro?</h2></div><div class="escolhas">' + leitores + '</div></section>' +
+      '<section class="painel passo" aria-labelledby="p2"><div class="passo-topo"><span class="passo-numero" aria-hidden="true">2</span><h2 id="p2">Qual livro vai sair?</h2></div>' +
+      (livres.length ? '<div class="busca"><label for="busca-livro">Procurar por título ou autor</label><input id="busca-livro" type="search" autocomplete="off"></div>' +
+        '<div class="escolhas escolhas--livros" id="livres">' + lista + '</div><p id="sem-livro" class="vazio" hidden>Nenhum livro livre com esse nome. Apague a busca para ver todos.</p>'
+        : '<div class="vazio">' + mascote() + '<p>Todos os livros já estão emprestados.</p></div>') + '</section>' +
+      '<section class="painel passo" aria-labelledby="p3"><div class="passo-topo"><span class="passo-numero" aria-hidden="true">3</span><h2 id="p3">Por quanto tempo?</h2></div><div class="escolhas">' + prazos + '</div>' +
+      '<p class="resumo painel-pontilhado" id="resumo" aria-live="polite"></p>' +
+      '<div class="acoes"><button class="botao botao--telha botao--grande" type="button" id="confirmar" data-acao="confirmar-emprestimo" disabled>Confirmar empréstimo</button></div></section></div>';
+    atualizarResumo();
+  }
+
+  function getLeitorSelecionado() {
+    if (sel.leitor === 'novo') {
+        var n = document.getElementById('input-novo-leitor');
+        return n ? n.value.trim() : '';
+    }
+    return sel.leitor;
+  }
+
+  function atualizarResumo() {
+    var l = livros.filter(function (x) { return String(x.id) === String(sel.livro); })[0];
+    var r = document.getElementById('resumo'), b = document.getElementById('confirmar');
+    var leitorAtual = getLeitorSelecionado();
+
+    if (!r) return;
+    if (leitorAtual && l) {
+      r.innerHTML = '<strong>' + esc(leitorAtual) + '</strong> leva <strong>' + esc(l.titulo) + '</strong> e devolve até <strong>' + dataLonga(somar(hoje, sel.semanas * 7)) + '</strong>.';
+      b.disabled = false;
+    } else {
+      r.textContent = !leitorAtual && !l ? 'Escolha quem vai levar e qual livro.' : !leitorAtual ? 'Falta escolher quem vai levar o livro.' : 'Falta escolher o livro.';
+      b.disabled = true;
+    }
+  }
+
+  function confirmarEmprestimo() {
+    var l = livros.filter(function (x) { return String(x.id) === String(sel.livro); })[0];
+    var leitorNome = getLeitorSelecionado();
+    if (!l || !leitorNome) return;
+    
+    var ate = somar(hoje, sel.semanas * 7);
+    
+    // Mostra o sucesso imediatamente para dar fluidez
+    l.emprestimo = { leitor: leitorNome, desde: iso(hoje), ate: iso(ate) };
+    app.innerHTML = '<div class="painel sucesso">' + mascote() + '<h1 id="titulo" tabindex="-1">Empréstimo feito</h1>' +
+      '<p><strong>' + esc(l.titulo) + '</strong> está com <strong>' + esc(l.emprestimo.leitor) + '</strong>. Deve voltar até ' + dataLonga(ate) + '.</p>' +
+      '<div class="acoes"><button class="botao botao--telha botao--grande" type="button" data-acao="outro-emprestimo">Emprestar outro livro</button>' +
+      '<a class="botao botao--claro botao--grande" href="#inicio">Voltar ao início</a></div></div>';
+    focarTitulo();
+
+    // Envia os dados para o servidor gravar de verdade
+    fetch('api.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ acao: 'emprestar', leitor: leitorNome, id_livro: sel.livro, semanas: sel.semanas })
+    }).then(atualizarBancoDeDados);
+  }
+
+  var aviso = null;
+  function telaDevolver() {
+    var fora = livros.filter(function (l) { return l.emprestimo; }).sort(function (a, b) { return a.emprestimo.ate.localeCompare(b.emprestimo.ate); });
+    var html = '<p>' + voltar() + '</p><h1 class="titulo-pagina" id="titulo" tabindex="-1"><span>Devolver um livro</span></h1>';
+    if (aviso) {
+      html += '<div class="aviso" role="status"><span><strong>' + esc(aviso.titulo) + '</strong> voltou para a estante.</span>' +
+        '<button class="botao botao--claro" type="button" data-acao="desfazer">Desfazer</button></div>';
+    }
+    if (!fora.length) {
+      html += '<div class="painel vazio">' + mascote() + '<p>Nenhum livro para devolver. Todos estão na estante.</p>' + voltar() + '</div>';
+    } else {
+      html += '<div class="devolucoes">' + fora.map(function (l) {
+        var e = estado(l), atraso = diasEntre(hoje, doISO(l.emprestimo.ate));
+        var det = e === 'atrasado'
+          ? 'Com ' + esc(l.emprestimo.leitor) + '. Era para voltar em ' + dataCurta(doISO(l.emprestimo.ate)) + '.'
+          : 'Com ' + esc(l.emprestimo.leitor) + '. Devolver até ' + dataCurta(doISO(l.emprestimo.ate)) + '.';
+        return '<article class="painel devolucao"><div><h2>' + esc(l.titulo) + '</h2><p class="autor">' + esc(l.autor) + '</p>' +
+          '<p class="detalhe">' + selo(l, e === 'atrasado' ? 'Atrasado há ' + plural(atraso, 'dia', 'dias') : 'No prazo') + ' ' + det + '</p></div>' +
+          '<button class="botao botao--telha botao--grande" type="button" data-acao="devolver" data-id="' + l.id + '">Devolver<span class="leitura"> ' + esc(l.titulo) + '</span></button></article>';
+      }).join('') + '</div>';
+    }
+    app.innerHTML = html;
+  }
+  function pedirDevolucao(id) {
+    var l = livros.filter(function (x) { return String(x.id) === String(id); })[0];
+    if (!l) return;
+    var d = document.getElementById('dlg-confirma');
+    d.innerHTML = '<h2 id="confirma-titulo">Devolver este livro?</h2>' +
+      '<p><strong>' + esc(l.titulo) + '</strong>, de ' + esc(l.autor) + ', estava com ' + esc(l.emprestimo.leitor) + '.</p>' +
+      '<div class="acoes"><button class="botao botao--telha botao--grande" type="button" data-acao="sim-devolver" data-id="' + l.id + '">Sim, devolver</button>' +
+      '<button class="botao botao--claro botao--grande" type="button" data-acao="fechar-confirma">Não, voltar</button></div>';
+    d.showModal();
+  }
+  function devolver(id) {
+    var l = livros.filter(function (x) { return String(x.id) === String(id); })[0];
+    if (!l) return;
+    
+    // Atualização visual imediata
+    aviso = { id: l.id, titulo: l.titulo, emprestimo: l.emprestimo };
+    l.emprestimo = null;
+    document.getElementById('dlg-confirma').close();
+    telaDevolver();
+    focarTitulo();
+
+    // Envia para o banco de dados
+    fetch('api.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ acao: 'devolver', id_livro: id })
+    }).then(atualizarBancoDeDados);
+  }
+  function desfazer() {
+    if (!aviso) return;
+    var emp = aviso.emprestimo;
+    var idAviso = aviso.id;
+    
+    // Atualização visual imediata
+    var l = livros.filter(function (x) { return String(x.id) === String(idAviso); })[0];
+    if (l) { l.emprestimo = emp; }
+    aviso = null;
+    telaDevolver();
+    focarTitulo();
+
+    // Envia a ordem de anulação para o servidor
+    fetch('api.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ acao: 'desfazer_devolucao', id_livro: idAviso })
+    }).then(atualizarBancoDeDados);
+  }
+
+  var ROTAS = { entrar: telaEntrar, inicio: telaInicio, livros: telaLivros, emprestar: telaEmprestar, devolver: telaDevolver };
+  function focarTitulo() { var t = document.getElementById('titulo'); if (t) { try { t.focus({ preventScroll: true }); } catch (e) { t.focus(); } } window.scrollTo(0, 0); }
+  function rota() {
+    var r = location.hash.slice(1);
+    if (!ROTAS[r]) r = usuario ? 'inicio' : 'entrar';
+    if (!usuario) r = 'entrar';
+    if (usuario && r === 'entrar') r = 'inicio';
+    if (location.hash !== '#' + r) { location.hash = r; return; }
+    aviso = null;
+    cabecalho();
+    ROTAS[r]();
+    focarTitulo();
+  }
+  window.addEventListener('hashchange', rota);
+
+  var ACOES = {
+    'ajuda': function () { document.getElementById('dlg-ajuda').showModal(); },
+    'fechar-ajuda': function () { document.getElementById('dlg-ajuda').close(); },
+    'fechar-confirma': function () { document.getElementById('dlg-confirma').close(); },
+    'sair': function () { usuario = null; gravar(CHAVE_USR, null); location.hash = 'entrar'; rota(); },
+    'ver-senha': function (b) {
+      var i = document.getElementById('senha'), ver = i.type === 'password';
+      i.type = ver ? 'text' : 'password'; b.textContent = ver ? 'Esconder' : 'Mostrar';
+    },
+    'filtro': function (b) { filtro = b.dataset.valor; termo = document.getElementById('busca').value;
+      document.querySelectorAll('.filtro').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); }); listar(); },
+    'limpar': function () { filtro = 'todos'; termo = ''; telaLivros(); document.getElementById('busca').focus(); },
+    'confirmar-emprestimo': confirmarEmprestimo,
+    'outro-emprestimo': function () { telaEmprestar(); focarTitulo(); },
+    'devolver': function (b) { pedirDevolucao(b.dataset.id); },
+    'sim-devolver': function (b) { devolver(b.dataset.id); },
+    'desfazer': desfazer
+  };
+  
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-acao]');
+    if (b && ACOES[b.dataset.acao]) ACOES[b.dataset.acao](b, e);
+  });
+  
+  document.addEventListener('submit', function (e) {
+    if (e.target.id !== 'form-entrar') return;
+    e.preventDefault();
+    var nome = document.getElementById('nome').value.trim(), senha = document.getElementById('senha').value, erro = document.getElementById('erro-entrar');
+    function falha(msg, campo) { erro.innerHTML = '<p class="erro">' + msg + '</p>'; document.getElementById(campo).focus(); }
+    if (!nome) return falha('Escreva seu nome para entrar.', 'nome');
+    if (senha !== '1234') return falha('A senha não confere. Confira os números e tente de novo.', 'senha');
+    var primeiro = nome.split(/\s+/)[0];
+    usuario = { nome: nome, primeiro: primeiro.charAt(0).toUpperCase() + primeiro.slice(1) };
+    gravar(CHAVE_USR, usuario);
+    location.hash = 'inicio'; rota();
+  });
+  
+  document.addEventListener('input', function (e) {
+    var t = e.target;
+    if (t.id === 'busca') { termo = t.value; listar(); }
+    if (t.id === 'busca-livro') {
+      var q = norm(t.value.trim()), visiveis = 0;
+      document.querySelectorAll('#livres .escolha').forEach(function (el) { var ok = !q || el.dataset.texto.indexOf(q) > -1; el.hidden = !ok; if (ok) visiveis++; });
+      document.getElementById('sem-livro').hidden = visiveis > 0;
+    }
+    if (t.id === 'input-novo-leitor') { atualizarResumo(); }
+  });
+  
+  document.addEventListener('change', function (e) {
+    var t = e.target;
+    if (t.name === 'leitor') {
+        sel.leitor = t.value;
+        var inp = document.getElementById('input-novo-leitor');
+        if (inp) inp.style.display = (t.value === 'novo') ? 'block' : 'none';
+        if (t.value === 'novo' && inp) inp.focus();
+    }
+    if (t.name === 'livro') sel.livro = t.value;
+    if (t.name === 'prazo') sel.semanas = Number(t.value);
+    if (t.name === 'leitor' || t.name === 'livro' || t.name === 'prazo') atualizarResumo();
+  });
+
+  // Função central para manter o front e o back sempre sincronizados
+  function atualizarBancoDeDados() {
+    return fetch('api.php')
+      .then(function (resposta) { return resposta.json(); })
+      .then(function (dadosDoBanco) {
+        livros = dadosDoBanco.livros;
+        // Se ainda não houver leitores no banco, insere alguns de teste para a tela não ficar vazia
+        LEITORES = dadosDoBanco.leitores.length ? dadosDoBanco.leitores : ['Maria das Dores', 'José Carlos'];
+      });
+  }
+
+  // Carrega tudo ao abrir a página
+  atualizarBancoDeDados().then(function() {
+      rota();
+  }).catch(function(erro) {
+      console.error('Erro de conexão com a API:', erro);
+      rota(); 
+  });
+
+})();
+</script>
+</body></html>
